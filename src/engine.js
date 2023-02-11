@@ -1,26 +1,37 @@
 /**
  * 
- * @param {Array<{id: number, text: string}>} docsArray массив документов
- * @returns {{docs: Array<{id: string, text: string}>, search: (value: string) => Array<string>}} объект 
+ * @param {Array<{id: string, text: string}>} docsArray массив документов
+ * @param {string} token искомое значение
+ * @returns {{docs: Array<{id: string, text: string}>, value: string} объект
  */
-export const engine = (docsArray) => {
-    const search = (value) => {
-        const result = [];
+export const engine = (docsArray, token) => {
+  const regExp = /\w+/g;
 
-        docsArray.forEach((doc) => {
-            const { text: docText, id } = doc;
-            const textAsArray = docText.split(" ");
+  const search = () => {
+    const term = token.match(regExp)[0];
 
-            if (textAsArray.includes(value)) {
-                result.push(id);
-            }
+    return docsArray.map(({ text: docText, id }) => {
+      const textAsArray = docText
+        .split(" ")
+        .map((el) => {
+          return el.match(regExp)[0];
         });
 
-        return result;
-    }
+      if (textAsArray.includes(term)) {
+        return id;
+      }
+    }).filter(id => id);
+  }
 
+  if (docsArray.length > 0) {
     return {
-        docs: docsArray,
-        search,
+      docs: search(),
+      value: token,
     };
+  } else {
+    return {
+      docs: docsArray,
+      value: token,
+    }
+  }
 }
